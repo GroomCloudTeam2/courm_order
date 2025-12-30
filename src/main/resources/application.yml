@@ -30,3 +30,10 @@ logging:
   level:
     com.groom.ecommerce: DEBUG
     org.hibernate.SQL: DEBUG
+
+toss:
+  payments:
+    base-url: https://api.tosspayments.com
+    secret-key: ${TOSS_SECRET_KEY:}   # 환경변수로 주기
+    connect-timeout-ms: 3000
+    read-timeout-ms: 5000

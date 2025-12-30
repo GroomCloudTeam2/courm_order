@@ -27,10 +27,8 @@ public class PaymentRepositoryImpl implements PaymentRepository {
 	}
 
 	@Override
-	public Optional<Payment> findById(Long paymentId) {
-		return Optional.ofNullable(
-			entityManager.find(Payment.class, paymentId)
-		);
+	public Optional<Payment> findById(String paymentId) {
+		return Optional.ofNullable(entityManager.find(Payment.class, paymentId));
 	}
 
 	@Override
@@ -45,6 +43,17 @@ public class PaymentRepositoryImpl implements PaymentRepository {
 	}
 
 	@Override
+	public boolean existsByOrderId(String orderId) {
+		Long count = entityManager.createQuery(
+				"SELECT COUNT(p) FROM Payment p WHERE p.orderId = :orderId",
+				Long.class
+			)
+			.setParameter("orderId", orderId)
+			.getSingleResult();
+		return count != null && count > 0;
+	}
+
+	@Override
 	public Optional<Payment> findByPaymentKey(String paymentKey) {
 		return entityManager.createQuery(
 				"SELECT p FROM Payment p WHERE p.paymentKey = :paymentKey",
@@ -55,23 +64,13 @@ public class PaymentRepositoryImpl implements PaymentRepository {
 			.findFirst();
 	}
 
-	/**
-	 * 결제 승인/취소 시 동시성 제어를 위한 비관적 락 조회
-	 */
 	@Override
-	public Optional<Payment> findByIdWithLock(Long paymentId) {
+	public Optional<Payment> findByIdWithLock(String paymentId) {
 		return Optional.ofNullable(
-			entityManager.find(
-				Payment.class,
-				paymentId,
-				LockModeType.PESSIMISTIC_WRITE
-			)
+			entityManager.find(Payment.class, paymentId, LockModeType.PESSIMISTIC_WRITE)
 		);
 	}
 
-	/**
-	 * paymentKey 기준 락 조회 (결제 승인 멱등 처리용)
-	 */
 	@Override
 	public Optional<Payment> findByPaymentKeyWithLock(String paymentKey) {
 		return entityManager.createQuery(

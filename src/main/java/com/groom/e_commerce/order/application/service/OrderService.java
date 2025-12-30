@@ -1,0 +1,142 @@
+package com.groom.e_commerce.order.application.service;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.groom.e_commerce.order.domain.entity.Order;
+import com.groom.e_commerce.order.domain.entity.OrderItem;
+import com.groom.e_commerce.order.domain.repository.OrderItemRepository;
+import com.groom.e_commerce.order.domain.repository.OrderRepository;
+import com.groom.e_commerce.order.presentation.dto.request.OrderCreateItemRequest;
+import com.groom.e_commerce.order.presentation.dto.request.OrderCreateRequest;
+// import com.groom.e_commerce.product.presentation.dto.response.ProductResponse; // DTO가 없으면 아래 내부 클래스 사용
+
+import lombok.Builder;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class OrderService {
+
+	private final OrderRepository orderRepository;
+	private final OrderItemRepository orderItemRepository;
+
+	// MSA 핵심: Repository가 아니라 Service(또는 Client)를 주입받음
+	// private final ProductService productService;
+	// private final AddressService addressService;
+
+	/**
+	 * 주문 생성 (핵심 비즈니스 로직)
+	 */
+	@Transactional // 쓰기 트랜잭션 시작
+	public UUID createOrder(UUID buyerId, OrderCreateRequest request) {
+
+		// 1. 배송지 정보 조회 (MOCK: 가짜 데이터 하드코딩)
+		// var address = addressService.getAddress(request.getAddressId());
+		// 👇 [임시] 주소 서비스가 없으므로 가짜 객체 생성
+		String recipientName = "테스트 수령인";
+		String recipientPhone = "010-1234-5678";
+		String zipCode = "12345";
+		String shippingAddress = "서울시 강남구 테헤란로 427";
+
+		// 2. 주문번호 생성 (예: 20241230-123456)
+		String orderNumber = generateOrderNumber();
+
+		// 3. 주문(Order) 엔티티 생성
+		Order order = Order.builder()
+			.buyerId(buyerId)
+			.orderNumber(orderNumber)
+			.recipientName(recipientName)     // 가짜 데이터 넣음
+			.recipientPhone(recipientPhone)   // 가짜 데이터 넣음
+			.zipCode(zipCode)                 // 가짜 데이터 넣음
+			.shippingAddress(shippingAddress) // 가짜 데이터 넣음
+			.shippingMemo("문 앞에 놔주세요")
+			.totalPaymentAmount(0L) // 나중에 계산해서 업데이트
+			.build();
+
+		orderRepository.save(order); // 영속화 (ID 생성됨)
+
+		// 4. 주문 상품(OrderItem) 처리
+		long totalAmount = 0L;
+		List<OrderItem> orderItems = new ArrayList<>();
+
+		for (OrderCreateItemRequest itemReq : request.getItems()) {
+
+			// [MSA Point 1] 상품 서비스에 정보 요청 (MOCK: 가짜 데이터)
+			// ProductResponse productInfo = productService.getProduct(itemReq.getProductId());
+
+			// 👇 [임시] 상품 서비스 대신 가짜 DTO 생성
+			MockProductResponse productInfo = MockProductResponse.builder()
+				.productId(itemReq.getProductId())
+				.ownerId(UUID.randomUUID())
+				.name("테스트 상품 (" + itemReq.getProductId().toString().substring(0,5) + ")")
+				.thumbnail("http://fake-image.com/img.png")
+				.optionName("기본 옵션")
+				.price(10000L) // 가격 10,000원으로 고정
+				.build();
+
+			// [MSA Point 2] 재고 차감 요청
+			// productService.decreaseStock(itemReq.getProductId(), itemReq.getQuantity());
+			// 👇 [임시] 재고 차감은 그냥 넘어감 (로그만 출력)
+			System.out.println("재고 차감 요청됨: ID=" + itemReq.getProductId() + ", 수량=" + itemReq.getQuantity());
+
+			// 5. 상품 스냅샷 생성 (OrderItem)
+			OrderItem orderItem = OrderItem.builder()
+				.order(order)
+				.productId(productInfo.getProductId())
+				.variantId(UUID.randomUUID())
+				.ownerId(productInfo.getOwnerId())
+				.productTitle(productInfo.getName())
+				.productThumbnail(productInfo.getThumbnail())
+				.optionName(productInfo.getOptionName())
+				.unitPrice(productInfo.getPrice())
+				.quantity(itemReq.getQuantity())
+				.build();
+
+			orderItems.add(orderItem);
+
+			// 총액 합산
+			totalAmount += (productInfo.getPrice() * itemReq.getQuantity());
+		}
+
+		// 6. OrderItem 일괄 저장
+		orderItemRepository.saveAll(orderItems);
+
+		// 7. 주문 총액 업데이트
+		// 👇 [중요] Order 엔티티에 이 메서드가 없으면 에러납니다!
+		// Order.java 파일에 updatePaymentAmount 메서드를 추가하거나,
+		// 정 안되면 일단 주석 처리하세요. (DB에는 0원으로 저장됨)
+
+		// order.updatePaymentAmount(totalAmount);
+		System.out.println("최종 결제 금액: " + totalAmount);
+
+		return order.getOrderId();
+	}
+
+	private String generateOrderNumber() {
+		String datePart = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+		int randomPart = ThreadLocalRandom.current().nextInt(100000, 999999);
+		return datePart + "-" + randomPart;
+	}
+
+	// 👇 [임시] 파일 하나로 해결하기 위해 내부에 만든 가짜 DTO 클래스
+	@Getter
+	@Builder
+	static class MockProductResponse {
+		private UUID productId;
+		private UUID ownerId;
+		private String name;
+		private String thumbnail;
+		private String optionName;
+		private Long price;
+	}
+}

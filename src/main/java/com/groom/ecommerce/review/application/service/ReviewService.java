@@ -104,22 +104,26 @@ public class ReviewService {
 	 * 리뷰 삭제: 평점 통계 마이너스 처리
 	 */
 	@Transactional
-	public void deleteReview(UUID reviewId, UUID userId) {
+	public void deleteReview(UUID reviewId) {
 		ReviewEntity review = reviewRepository.findById(reviewId)
 			.orElseThrow(() -> new IllegalArgumentException("리뷰가 존재하지 않습니다."));
 
-		if (!review.getUserId().equals(userId)) {
+		UUID currentUserId = SecurityUtil.getCurrentUserId();
+
+		if (!review.getUserId().equals(currentUserId)) {
 			throw new SecurityException("삭제 권한이 없습니다.");
 		}
 
-		// 평점 통계에서 제외 (별도의 차감 메서드 구현 권장)
-		ProductRatingEntity ratingEntity = productRatingRepository.findByProductId(review.getProductId())
-			.orElseThrow(() -> new IllegalStateException("상품 통계 정보가 없습니다."));
+		// 평점 차감
+		ProductRatingEntity ratingEntity =
+			productRatingRepository.findByProductId(review.getProductId())
+				.orElseThrow(() -> new IllegalStateException("상품 통계 정보가 없습니다."));
 
-		// ratingEntity.removeRating(review.getRating()); // 이전 답변의 추천 메서드 활용
+		ratingEntity.removeRating(review.getRating());
 
-		reviewRepository.delete(review);
+		review.softDelete();
 	}
+
 
   /*
 	@Transactional

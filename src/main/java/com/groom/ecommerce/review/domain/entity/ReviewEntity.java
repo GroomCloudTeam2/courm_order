@@ -53,6 +53,9 @@ public class ReviewEntity {
 	@Column(nullable = false, length = 20)
 	private ReviewCategory category;
 
+	@Column(nullable = false)
+	private int likeCount = 0;
+
 	/* ================= 감사(Auditing) ================= */
 
 	@CreatedDate

@@ -1,5 +1,6 @@
 package com.groom.ecommerce.review.presentation.controller;
 
+import com.groom.ecommerce.global.security.AuthenticatedUser;
 import com.groom.ecommerce.review.application.service.ReviewService;
 import com.groom.ecommerce.review.presentation.dto.request.CreateReviewRequest;
 import com.groom.ecommerce.review.presentation.dto.request.UpdateReviewRequest;
@@ -8,6 +9,7 @@ import com.groom.ecommerce.review.presentation.dto.response.ReviewResponse;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -21,24 +23,25 @@ public class ReviewController {
 
 	// 리뷰 작성
 	@PostMapping("/{orderId}/items/{productId}")
+	@ResponseStatus(HttpStatus.CREATED)
 	public ReviewResponse createReview(
 		@PathVariable UUID orderId,
 		@PathVariable UUID productId,
-		//@AuthenticationPrincipal UserDetailsImpl userDetails,
-		@RequestParam UUID userId, //테스트용 userID
+		@AuthenticationPrincipal AuthenticatedUser user,
 		@RequestBody CreateReviewRequest request
 	) {
-		return reviewService.createReview(orderId, productId, userId,request);
-		//return reviewService.createReview(orderId, productId,userDetails.getUserId(),request);
+		return reviewService.createReview(orderId, productId, user.getUserId(), request);
 	}
 
-	// 개별 리뷰 상세 조회 (필요 시)
+	// 개별 리뷰 상세 조회
 	@GetMapping("/{orderId}/items/{productId}/review")
 	public ReviewResponse getReview(
 		@PathVariable UUID orderId,
-		@PathVariable UUID productId
+		@PathVariable UUID productId,
+		@AuthenticationPrincipal AuthenticatedUser user
 	) {
-		return reviewService.getReview(orderId, productId);
+
+		return reviewService.getReview(orderId, productId, user.getUserId());
 	}
 
 	// 리뷰 수정
@@ -46,29 +49,19 @@ public class ReviewController {
 	public ReviewResponse updateReview(
 		@PathVariable UUID orderId,
 		@PathVariable UUID productId,
-		@RequestParam UUID userId, // 본인 확인용 추가
+		@AuthenticationPrincipal AuthenticatedUser user, // 인터페이스로 변경
 		@RequestBody UpdateReviewRequest request
 	) {
-		return reviewService.updateReview(orderId, productId, userId, request);
+		return reviewService.updateReview(orderId, productId, user.getUserId(), request);
 	}
 
-	// 리뷰 삭제 추가
-	@DeleteMapping("/{reviewId}")
-	@ResponseStatus(HttpStatus.NO_CONTENT) // 삭제 성공 시 204 반환
-	public void deleteReview(
-		@PathVariable UUID reviewId,
-		@RequestParam UUID userId // 본인 확인용
-	) {
-		reviewService.deleteReview(reviewId, userId);
-	}
-/*
+	// 리뷰 삭제
 	@DeleteMapping("/{reviewId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteReview(
 		@PathVariable UUID reviewId,
-		@AuthenticationPrincipal UserDetailsImpl userDetails
+		@AuthenticationPrincipal AuthenticatedUser user // 인터페이스로 변경
 	) {
-		reviewService.deleteReview(reviewId, userDetails.getUserId());
+		reviewService.deleteReview(reviewId, user.getUserId());
 	}
- */
 }

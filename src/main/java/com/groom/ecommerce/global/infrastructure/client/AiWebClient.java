@@ -1,5 +1,10 @@
 package com.groom.ecommerce.global.infrastructure.client;
 
+import com.groom.ecommerce.review.domain.entity.ReviewCategory;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -9,10 +14,9 @@ public class AiWebClient {
 
 	private final WebClient webClient;
 
-	public AiWebClient() {
-		this.webClient = WebClient.builder()
-			.baseUrl("http://localhost:8000") // AI 컨테이너 주소
-			.build();
+	// WebClientConfig에서 생성된 Bean을 주입받음
+	public AiWebClient(WebClient aiWebClientInstance) {
+		this.webClient = aiWebClientInstance;
 	}
 
 	public AiResponse classifyComment(String comment) {
@@ -22,54 +26,27 @@ public class AiWebClient {
 				.bodyValue(new AiRequest(comment))
 				.retrieve()
 				.bodyToMono(AiResponse.class)
-				.block(); // 블로킹 호출, 테스트용으로 적합
+				.block();
 		} catch (WebClientResponseException e) {
-			e.printStackTrace();
-			return null;
+			// 실제 서비스에서는 로깅 프레임워크(slf4j) 사용을 추천합니다.
+			return new AiResponse(ReviewCategory.ERR, 0.0);
 		}
 	}
 
+	@Getter
+	@Setter
+	@AllArgsConstructor
+	@NoArgsConstructor
 	public static class AiRequest {
 		private String comment;
-
-		public AiRequest(String comment) {
-			this.comment = comment;
-		}
-
-		public String getComment() {
-			return comment;
-		}
-
-		public void setComment(String comment) {
-			this.comment = comment;
-		}
 	}
 
+	@Getter
+	@Setter
+	@AllArgsConstructor
+	@NoArgsConstructor
 	public static class AiResponse {
-		private String category;
+		private ReviewCategory category; // String 대신 도메인 Entity의 Enum 사용
 		private double confidence;
-
-		public AiResponse() {
-		} // Jackson용 기본 생성자
-
-		public AiResponse(String category) {
-			this.category = category;
-		}
-
-		public String getCategory() {
-			return category;
-		}
-
-		public void setCategory(String category) {
-			this.category = category;
-		}
-
-		public double getConfidence() {
-			return confidence;
-		}
-
-		public void setConfidence(double confidence) {
-			this.confidence = confidence;
-		}
 	}
 }

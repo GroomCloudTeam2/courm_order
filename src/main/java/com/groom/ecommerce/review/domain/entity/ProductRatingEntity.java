@@ -49,25 +49,23 @@ public class ProductRatingEntity {
 	}
 
 	public void updateRating(Integer newRating) {
-		double totalScore = this.avgRating * this.reviewCount;
+		double currentTotal = this.avgRating * this.reviewCount;
 		this.reviewCount += 1;
-		double updatedAvg = (totalScore + newRating) / this.reviewCount;
+		double updatedAvg = (currentTotal + newRating) / this.reviewCount;
 		this.avgRating = Math.round(updatedAvg * 10.0) / 10.0;
 	}
 
 	public void removeRating(Integer oldRating) {
-		if (this.reviewCount < 1) {
+		if (this.reviewCount <= 1) {
 			this.reviewCount = 0;
 			this.avgRating = 0.0;
 			return;
 		}
-		double totalScore = this.avgRating * this.reviewCount;
-		this.reviewCount -= 1;
-		double updatedAvg = (totalScore - oldRating) / this.reviewCount;
-		this.avgRating = Math.round(updatedAvg * 10.0) / 10.0;
-	}
 
-	public void updateAiReview(String aiReview) {
-		this.aiReview = aiReview;
+		double currentTotal = this.avgRating * this.reviewCount;
+		this.reviewCount -= 1;
+
+		double updatedAvg = (currentTotal - oldRating) / this.reviewCount;
+		this.avgRating = Math.round(updatedAvg * 10.0) / 10.0;
 	}
 }

@@ -5,7 +5,8 @@ public enum ReviewCategory {
 	DESIGN,
 	PERFORMANCE,
 	CONVENIENCE,
-	QUALITY;
+	QUALITY,
+	ERR;
 
 	public static ReviewCategory fromAiCategory(String aiCategory) {
 		return switch (aiCategory) {

@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.groom.e_commerce.payment.application.port.in.CancelPaymentUseCase;
 import com.groom.e_commerce.payment.application.port.in.ConfirmPaymentUseCase;
 import com.groom.e_commerce.payment.application.port.in.ReadyPaymentUseCase;
+import com.groom.e_commerce.payment.application.port.out.OrderQueryPort;
 import com.groom.e_commerce.payment.application.port.out.TossPaymentPort;
 import com.groom.e_commerce.payment.domain.entity.Payment;
 import com.groom.e_commerce.payment.domain.entity.PaymentCancel;
@@ -28,11 +29,6 @@ import com.groom.e_commerce.payment.presentation.dto.response.ResPaymentV1;
 import com.groom.e_commerce.payment.presentation.dto.response.ResReadyPaymentV1;
 import com.groom.e_commerce.payment.presentation.exception.PaymentException;
 
-// ✅ 주문 조회는 결제 준비에서 필요
-// 너 프로젝트 실제 경로에 맞게 import 수정
-import com.groom.e_commerce.order.domain.entity.Order;
-import com.groom.e_commerce.order.domain.repository.OrderRepository;
-
 @Service
 @Transactional
 public class PaymentCommandService implements ConfirmPaymentUseCase, CancelPaymentUseCase, ReadyPaymentUseCase {
@@ -40,23 +36,23 @@ public class PaymentCommandService implements ConfirmPaymentUseCase, CancelPayme
 	private final PaymentRepository paymentRepository;
 	private final TossPaymentPort tossPaymentPort;
 	private final TossPaymentsProperties tossPaymentsProperties;
-	private final OrderRepository orderRepository;
+	private final OrderQueryPort orderQueryPort;
 
 	public PaymentCommandService(
 		PaymentRepository paymentRepository,
 		TossPaymentPort tossPaymentPort,
 		TossPaymentsProperties tossPaymentsProperties,
-		OrderRepository orderRepository
+		OrderQueryPort orderQueryPort
 	) {
 		this.paymentRepository = paymentRepository;
 		this.tossPaymentPort = tossPaymentPort;
 		this.tossPaymentsProperties = tossPaymentsProperties;
-		this.orderRepository = orderRepository;
+		this.orderQueryPort = orderQueryPort;
 	}
 
 	/**
 	 * ✅ 결제 준비(READY)
-	 * - 주문 존재 확인
+	 * - 주문 존재 확인(Port)
 	 * - 금액 위변조 검증 (서버 기준)
 	 * - 결제 레코드 존재 확인(주문 생성 시 Payment READY가 이미 생성돼있다는 전제)
 	 * - 결제 상태 READY 확인
@@ -70,16 +66,24 @@ public class PaymentCommandService implements ConfirmPaymentUseCase, CancelPayme
 		UUID orderId = request.orderId();
 		Long requestAmount = request.amount();
 
-		// 1) 주문 조회
-		Order order = orderRepository.findById(orderId)
-			.orElseThrow(() -> new PaymentException(
+		// 1) 주문 요약 조회 (Order 도메인 직접 의존 제거)
+		OrderQueryPort.OrderSummary order;
+		try {
+			order = orderQueryPort.getOrderSummary(orderId);
+		} catch (PaymentException e) {
+			// Port 구현에서 PaymentException 던지는 경우 그대로 전파
+			throw e;
+		} catch (Exception e) {
+			// Port 구현체가 어떤 예외를 던져도 결제쪽에서는 일관된 에러로 변환
+			throw new PaymentException(
 				HttpStatus.NOT_FOUND,
 				"ORDER_NOT_FOUND",
 				"주문 정보를 찾을 수 없습니다."
-			));
+			);
+		}
 
 		// 2) 금액 검증 (주문 총액 vs 요청 amount)
-		long orderTotal = order.getTotalPaymentAmt(); // 너 주문 엔티티 필드명에 맞게 수정
+		long orderTotal = order.totalPaymentAmt();
 		if (orderTotal != requestAmount) {
 			throw new PaymentException(
 				HttpStatus.BAD_REQUEST,
@@ -105,9 +109,9 @@ public class PaymentCommandService implements ConfirmPaymentUseCase, CancelPayme
 			);
 		}
 
-		// 5) 결제창 표시용 이름들
-		String orderName = "주문 " + order.getOrderNumber(); // 너 주문번호 필드명에 맞게 수정
-		String customerName = order.getRecipientName();     // 또는 buyer nickname 등
+		// 5) 결제창 표시용 이름들 (Port로 받은 값 사용)
+		String orderName = "주문 " + order.orderNumber();
+		String customerName = order.recipientName();
 
 		return new ResReadyPaymentV1(
 			orderId,

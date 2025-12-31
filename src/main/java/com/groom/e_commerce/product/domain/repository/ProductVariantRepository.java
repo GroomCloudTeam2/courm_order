@@ -1,13 +1,15 @@
 package com.groom.e_commerce.product.domain.repository;
 
-import com.groom.e_commerce.product.domain.entity.ProductVariant;
-import com.groom.e_commerce.product.domain.enums.VariantStatus;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import com.groom.e_commerce.product.domain.entity.ProductVariant;
+import com.groom.e_commerce.product.domain.enums.VariantStatus;
 
 public interface ProductVariantRepository extends JpaRepository<ProductVariant, UUID> {
 

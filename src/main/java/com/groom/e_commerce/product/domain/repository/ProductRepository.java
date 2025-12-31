@@ -1,15 +1,17 @@
 package com.groom.e_commerce.product.domain.repository;
 
-import com.groom.e_commerce.product.domain.entity.Product;
-import com.groom.e_commerce.product.domain.enums.ProductStatus;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import com.groom.e_commerce.product.domain.entity.Product;
+import com.groom.e_commerce.product.domain.enums.ProductStatus;
 
 public interface ProductRepository extends JpaRepository<Product, UUID> {
 
@@ -34,7 +36,8 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 	Optional<Product> findByIdAndOnSale(@Param("id") UUID id);
 
 	// 상품 + 옵션 + 옵션값 한방 조회
-	@Query("SELECT p FROM Product p LEFT JOIN FETCH p.options o LEFT JOIN FETCH o.optionValues WHERE p.id = :id AND p.deletedAt IS NULL")
+	@Query("SELECT p FROM Product p LEFT JOIN FETCH p.options o LEFT JOIN FETCH o.optionValues "
+		+ "WHERE p.id = :id AND p.deletedAt IS NULL")
 	Optional<Product> findByIdWithOptions(@Param("id") UUID id);
 
 	// 상품 + variant 한방 조회

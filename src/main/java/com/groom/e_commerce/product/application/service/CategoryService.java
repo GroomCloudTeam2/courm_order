@@ -1,15 +1,18 @@
 package com.groom.e_commerce.product.application.service;
 
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.groom.e_commerce.global.common.exception.BusinessException;
 import com.groom.e_commerce.global.common.exception.ErrorCode;
 import com.groom.e_commerce.product.domain.entity.Category;
 import com.groom.e_commerce.product.domain.repository.CategoryRepository;
 import com.groom.e_commerce.product.presentation.dto.response.CategoryResponse;
-import java.util.List;
-import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor

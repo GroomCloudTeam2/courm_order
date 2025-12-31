@@ -1,8 +1,10 @@
 package com.groom.e_commerce.product.presentation.dto.response;
 
-import com.groom.e_commerce.product.domain.entity.Category;
 import java.util.List;
 import java.util.UUID;
+
+import com.groom.e_commerce.product.domain.entity.Category;
+
 import lombok.Builder;
 import lombok.Getter;
 

@@ -3,6 +3,7 @@ package com.groom.e_commerce.product.domain.entity;
 import java.util.UUID;
 
 import com.groom.e_commerce.global.common.entity.BaseEntity;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

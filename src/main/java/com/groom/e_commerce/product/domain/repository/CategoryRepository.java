@@ -1,11 +1,13 @@
 package com.groom.e_commerce.product.domain.repository;
 
-import com.groom.e_commerce.product.domain.entity.Category;
 import java.util.List;
 import java.util.UUID;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import com.groom.e_commerce.product.domain.entity.Category;
 
 public interface CategoryRepository extends JpaRepository<Category, UUID> {
 
@@ -20,7 +22,8 @@ public interface CategoryRepository extends JpaRepository<Category, UUID> {
 	List<Category> findAllActiveOrderByDepthAndSortOrder();
 
 	// 대분류 조회 시 자식들까지 한 번에 로딩
-	@Query("SELECT c FROM Category c LEFT JOIN FETCH c.children WHERE c.parent IS NULL AND c.isActive = true ORDER BY c.sortOrder")
+	@Query("SELECT c FROM Category c LEFT JOIN FETCH c.children "
+		+ "WHERE c.parent IS NULL AND c.isActive = true ORDER BY c.sortOrder")
 	List<Category> findRootCategoriesWithChildren();
 
 	// 카테고리 삭제 전 자식이 있는지 검사

@@ -78,15 +78,10 @@ public class ReviewService {
 	 * 리뷰 수정
 	 */
 	@Transactional
-	public ReviewResponse updateReview(
-		UUID orderId,
-		UUID productId,
-		UUID currentUserId,
-		UpdateReviewRequest request
-	) {
+	public ReviewResponse updateReview(UUID reviewId, UUID currentUserId, UpdateReviewRequest request) {
 		// 1. 리뷰 존재 여부 확인
-		ReviewEntity review = reviewRepository.findByOrderIdAndProductId(orderId, productId)
-			.orElseThrow(() -> new IllegalArgumentException("리뷰를 찾을 수 없습니다."));
+		ReviewEntity review = reviewRepository.findById(reviewId)
+			.orElseThrow(() -> new IllegalArgumentException("리뷰가 존재하지 않습니다."));
 
 		// 2. 권한 확인 (본인 리뷰인지)
 		if (!review.getUserId().equals(currentUserId)) {
@@ -95,7 +90,7 @@ public class ReviewService {
 
 		// 3. 평점 변경 시 통계 업데이트
 		if (request.getRating() != null && !review.getRating().equals(request.getRating())) {
-			ProductRatingEntity ratingEntity = productRatingRepository.findByProductId(productId)
+			ProductRatingEntity ratingEntity = productRatingRepository.findByProductId(review.getProductId())
 				.orElseThrow(() -> new IllegalStateException("상품 통계 정보가 없습니다."));
 
 			ratingEntity.removeRating(review.getRating());
@@ -104,9 +99,8 @@ public class ReviewService {
 			review.updateRating(request.getRating());
 		}
 
-		// 4. 내용 변경 시 AI 카테고리 재분류 (수정된 부분)
+		// 4. 내용 변경 시 AI 카테고리 재분류
 		if (request.getContent() != null && !request.getContent().isBlank()) {
-			// String categoryStr 단계를 생략하고 바로 Enum으로 받습니다.
 			ReviewCategory category = classifyComment(request.getContent());
 			review.updateContentAndCategory(request.getContent(), category);
 		}
@@ -168,9 +162,9 @@ public class ReviewService {
 	/**
 	 * 단건 리뷰 조회
 	 */
-	public ReviewResponse getReview(UUID orderId, UUID productId, UUID currentUserId) {
+	public ReviewResponse getReview(UUID reviewId, UUID currentUserId) {
 
-		ReviewEntity review = reviewRepository.findByOrderIdAndProductId(orderId, productId)
+		ReviewEntity review = reviewRepository.findById(reviewId)
 			.orElseThrow(() -> new IllegalArgumentException("리뷰가 존재하지 않습니다."));
 
 		if (!review.getUserId().equals(currentUserId)) {

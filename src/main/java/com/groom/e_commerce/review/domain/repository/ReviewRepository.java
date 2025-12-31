@@ -17,4 +17,5 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, UUID> {
 
 
 	Page<ReviewEntity> findAllByProductId(UUID productId, Pageable pageable);
+
 }

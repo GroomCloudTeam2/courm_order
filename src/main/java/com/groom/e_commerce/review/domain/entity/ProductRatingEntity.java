@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -14,6 +15,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "p_product_rating")
 @Getter
 @NoArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 public class ProductRatingEntity {
 
 	@Id
@@ -29,7 +31,7 @@ public class ProductRatingEntity {
 	@Column(nullable = false)
 	private Integer reviewCount = 0;
 
-	@Column(name = "AI_review", columnDefinition = "TEXT")
+	@Column(name = "ai_review", columnDefinition = "TEXT")
 	private String aiReview; // 추후 LLM을 통해 생성될 리뷰 요약. 현재는 NULL값 입력
 
 	@Version

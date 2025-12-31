@@ -1,0 +1,38 @@
+package com.groom.e_commerce.order.presentation.dto.response;
+
+import com.groom.e_commerce.order.domain.entity.Order;
+import com.groom.e_commerce.order.domain.status.OrderStatus;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
+public record OrderResponse(
+	UUID orderId,
+	String orderNo,
+	OrderStatus status,
+	BigDecimal totalAmount,
+	LocalDateTime orderedAt,
+	List<OrderItemResponse> items // 핵심: 리스트 포함
+) {
+	public static OrderResponse from(Order order) {
+		List<OrderItemResponse> itemResponses = order.getItems().stream()
+			.map(OrderItemResponse::from)
+			.toList();
+
+		// 총 주문 금액 계산 (도메인 로직에 있다면 그것을 사용, 여기선 단순 합계)
+		BigDecimal total = itemResponses.stream()
+			.map(OrderItemResponse::subtotal)
+			.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		return new OrderResponse(
+			order.getId(),
+			order.getOrderNo(),
+			order.getStatus(),
+			total,
+			order.getCreatedAt(),
+			itemResponses
+		);
+	}
+}

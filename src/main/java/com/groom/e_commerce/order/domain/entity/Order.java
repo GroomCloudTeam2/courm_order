@@ -1,10 +1,13 @@
 package com.groom.e_commerce.order.domain.entity;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.util.UUID;
 
 import com.groom.e_commerce.global.domain.entity.BaseEntity;
 import com.groom.e_commerce.order.domain.status.OrderStatus;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -12,6 +15,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -41,6 +45,9 @@ public class Order extends BaseEntity { // Audit(생성일시 등) 적용
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false, length = 20)
 	private OrderStatus status;
+
+	@OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<OrderItem> items = new ArrayList<>();
 
 	/* ================= 배송지 스냅샷 (ERD 제약조건 반영) ================= */
 

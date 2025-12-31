@@ -29,7 +29,7 @@ import lombok.NoArgsConstructor;
 public class ProductOption extends BaseEntity {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "option_id")
 	private UUID id;
 

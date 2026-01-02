@@ -1,5 +1,4 @@
-package com.groom.e_commerce.global.infrastructure.client;
-
+package com.groom.e_commerce.global.infrastructure.client.Classification;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.groom.e_commerce.review.domain.entity.ReviewCategory;
 import lombok.AllArgsConstructor;

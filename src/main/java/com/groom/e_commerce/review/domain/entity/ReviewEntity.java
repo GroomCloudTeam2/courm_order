@@ -1,6 +1,5 @@
 package com.groom.e_commerce.review.domain.entity;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 import jakarta.persistence.*;
@@ -13,19 +12,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import org.hibernate.annotations.Where;
-import org.springframework.data.annotation.CreatedBy;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedBy;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import com.groom.e_commerce.global.domain.entity.BaseEntity;
 
 @Entity
 @Table(name = "p_review")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@EntityListeners(AuditingEntityListener.class)
-@Where(clause = "deleted = false")
-public class ReviewEntity {
+@Where(clause = "deleted_at IS NULL")
+public class ReviewEntity extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
@@ -46,7 +41,7 @@ public class ReviewEntity {
 	@Max(5)
 	private Integer rating;
 
-	@Column(columnDefinition = "TEXT")
+	@Column(columnDefinition = "TEXT", nullable = false)
 	private String content;
 
 	@Enumerated(EnumType.STRING)
@@ -55,36 +50,6 @@ public class ReviewEntity {
 
 	@Column(nullable = false)
 	private int likeCount = 0;
-
-	/* ================= 감사(Auditing) ================= */
-
-	@CreatedDate
-	@Column(name = "created_at", nullable = false, updatable = false)
-	private LocalDateTime createdAt;
-
-	@CreatedBy
-	@Column(name = "created_by", updatable = false)
-	private UUID createdBy;
-
-	@LastModifiedDate
-	@Column(name = "updated_at")
-	private LocalDateTime updatedAt;
-
-	@LastModifiedBy
-	@Column(name = "updated_by")
-	private UUID updatedBy;
-
-	/* ================= 소프트 삭제 ================= */
-
-	@Column(nullable = false)
-	private boolean deleted = false;
-
-	@Column(name = "deleted_at")
-	private LocalDateTime deletedAt;
-
-	@LastModifiedBy
-	@Column(name = "deleted_by")
-	private UUID deletedBy;
 
 	/* ================= 생성자 ================= */
 
@@ -116,20 +81,13 @@ public class ReviewEntity {
 		this.category = category;
 	}
 
-	/* ================= 소프트 딜리트 ================= */
-
-	public void softDelete() {
-		this.deleted = true;
-		this.deletedAt = LocalDateTime.now();
-	}
-
 	public void incrementLikeCount() {
 		this.likeCount++;
 	}
 
 	public void decrementLikeCount() {
-		if (this.likeCount > 0)
+		if (this.likeCount > 0) {
 			this.likeCount--;
+		}
 	}
-
 }

@@ -1,22 +1,22 @@
 package com.groom.e_commerce.review.domain.entity;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
 import jakarta.persistence.*;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import com.groom.e_commerce.global.domain.entity.BaseEntity;
 
 @Entity
 @Table(name = "p_product_rating")
 @Getter
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-public class ProductRatingEntity {
+public class ProductRatingEntity extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
@@ -32,17 +32,10 @@ public class ProductRatingEntity {
 	private Integer reviewCount = 0;
 
 	@Column(name = "ai_review", columnDefinition = "TEXT")
-	private String aiReview; // 추후 LLM을 통해 생성될 리뷰 요약. 현재는 NULL값 입력
+	private String aiReview;
 
 	@Version
 	private Long version;
-
-	@CreatedDate
-	@Column(nullable = false, updatable = false)
-	private LocalDateTime createdAt;
-
-	@LastModifiedDate
-	private LocalDateTime updatedAt;
 
 	public ProductRatingEntity(UUID productId) {
 		this.productId = productId;
@@ -74,5 +67,4 @@ public class ProductRatingEntity {
 	public void updateAiReview(String aiReview) {
 		this.aiReview = aiReview;
 	}
-
 }

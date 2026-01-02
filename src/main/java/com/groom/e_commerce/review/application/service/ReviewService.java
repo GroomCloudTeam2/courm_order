@@ -1,6 +1,6 @@
 package com.groom.e_commerce.review.application.service;
 
-import com.groom.e_commerce.global.infrastructure.client.AiRestClient;
+import com.groom.e_commerce.global.infrastructure.client.Classification.AiRestClient;
 import com.groom.e_commerce.review.application.validator.OrderReviewValidator;
 import com.groom.e_commerce.review.domain.entity.ProductRatingEntity;
 import com.groom.e_commerce.review.domain.entity.ReviewCategory;
@@ -132,7 +132,7 @@ public class ReviewService {
 				.orElseThrow(() -> new IllegalStateException("상품 통계 정보가 없습니다."));
 
 		ratingEntity.removeRating(review.getRating());
-		review.softDelete();
+		review.softDelete(currentUserId.toString());
 	}
 
 	/**

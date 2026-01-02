@@ -1,4 +1,4 @@
-package com.groom.e_commerce.global.infrastructure.client;
+package com.groom.e_commerce.global.infrastructure.client.Classification;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

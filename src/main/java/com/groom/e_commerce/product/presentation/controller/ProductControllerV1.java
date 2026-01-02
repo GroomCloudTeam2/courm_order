@@ -8,7 +8,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,6 +37,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/v1/products")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('OWNER')")
 public class ProductControllerV1 {
 
 	private final ProductServiceV1 productService;
@@ -74,5 +78,10 @@ public class ProductControllerV1 {
 	) {
 		productService.deleteProduct(productId);
 		return ResponseEntity.noContent().build();
+	}
+
+	@ExceptionHandler(AccessDeniedException.class)
+	public ResponseEntity<Void> handleAccessDeniedException(AccessDeniedException e) {
+		return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 	}
 }

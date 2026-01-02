@@ -28,6 +28,7 @@ public class ReviewController {
 		@PathVariable UUID productId,
 		@RequestBody CreateReviewRequest request
 	) {
+		System.out.println("여기는 오니?");
 		UUID userId = SecurityUtil.getCurrentUserId();
 		return reviewService.createReview(orderId, productId, userId, request);
 	}
@@ -58,4 +59,18 @@ public class ReviewController {
 		UUID userId = SecurityUtil.getCurrentUserId();
 		reviewService.deleteReview(reviewId, userId);
 	}
+	// 리뷰 좋아요
+	@PostMapping("/{reviewId}/like")
+	public int likeReview(@PathVariable UUID reviewId) {
+		UUID userId = SecurityUtil.getCurrentUserId();
+		return reviewService.likeReview(reviewId, userId);
+	}
+
+	// 리뷰 좋아요 취소
+	@DeleteMapping("/{reviewId}/like")
+	public int unlikeReview(@PathVariable UUID reviewId) {
+		UUID userId = SecurityUtil.getCurrentUserId();
+		return reviewService.unlikeReview(reviewId, userId);
+	}
+
 }

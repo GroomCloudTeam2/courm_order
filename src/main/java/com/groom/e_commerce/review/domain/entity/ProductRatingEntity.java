@@ -70,4 +70,9 @@ public class ProductRatingEntity {
 		double updatedAvg = (currentTotal - oldRating) / this.reviewCount;
 		this.avgRating = Math.round(updatedAvg * 10.0) / 10.0;
 	}
+
+	public void updateAiReview(String aiReview) {
+		this.aiReview = aiReview;
+	}
+
 }

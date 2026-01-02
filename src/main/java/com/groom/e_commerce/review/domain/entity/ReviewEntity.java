@@ -53,6 +53,9 @@ public class ReviewEntity {
 	@Column(nullable = false, length = 20)
 	private ReviewCategory category;
 
+	@Column(nullable = false)
+	private int likeCount = 0;
+
 	/* ================= 감사(Auditing) ================= */
 
 	@CreatedDate
@@ -119,4 +122,14 @@ public class ReviewEntity {
 		this.deleted = true;
 		this.deletedAt = LocalDateTime.now();
 	}
+
+	public void incrementLikeCount() {
+		this.likeCount++;
+	}
+
+	public void decrementLikeCount() {
+		if (this.likeCount > 0)
+			this.likeCount--;
+	}
+
 }

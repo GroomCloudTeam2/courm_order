@@ -21,9 +21,10 @@ public class ProductReviewController {
 	public ProductReviewResponse getProductReviews(
 		@PathVariable UUID productId,
 		@RequestParam(defaultValue = "0") int page,
-		@RequestParam(defaultValue = "10") int size
+		@RequestParam(defaultValue = "10") int size,
+		@RequestParam(defaultValue = "latest") String sort
 	) {
 
-		return reviewService.getProductReviews(productId, page, size);
+		return reviewService.getProductReviews(productId, page, size, sort);
 	}
 }

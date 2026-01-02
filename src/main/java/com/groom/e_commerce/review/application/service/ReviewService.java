@@ -1,10 +1,12 @@
 package com.groom.e_commerce.review.application.service;
 
-import com.groom.e_commerce.global.infrastructure.client.AiWebClient;
+import com.groom.e_commerce.global.infrastructure.client.AiRestClient;
 import com.groom.e_commerce.review.domain.entity.ProductRatingEntity;
 import com.groom.e_commerce.review.domain.entity.ReviewCategory;
 import com.groom.e_commerce.review.domain.entity.ReviewEntity;
+import com.groom.e_commerce.review.domain.entity.ReviewLikeEntity;
 import com.groom.e_commerce.review.domain.repository.ProductRatingRepository;
+import com.groom.e_commerce.review.domain.repository.ReviewLikeRepository;
 import com.groom.e_commerce.review.domain.repository.ReviewRepository;
 import com.groom.e_commerce.review.presentation.dto.request.CreateReviewRequest;
 import com.groom.e_commerce.review.presentation.dto.request.UpdateReviewRequest;
@@ -31,8 +33,9 @@ import org.springframework.stereotype.Service;
 public class ReviewService {
 
 	private final ReviewRepository reviewRepository;
+	private final ReviewLikeRepository reviewLikeRepository;
 	private final ProductRatingRepository productRatingRepository;
-	private final AiWebClient aiWebClient;
+	private final AiRestClient aiRestClient;
 
 	/**
 	 * 리뷰 작성
@@ -132,9 +135,19 @@ public class ReviewService {
 	/**
 	 * 상품별 리뷰 목록 조회
 	 */
-	public ProductReviewResponse getProductReviews(UUID productId, int page, int size) {
-		Pageable pageable =
-			PageRequest.of(page, size, Sort.by("reviewId").descending());
+	public ProductReviewResponse getProductReviews(UUID productId, int page, int size, String sortParam) {
+
+		Sort sort;
+		// 정렬 기준 결정
+		if ("like".equalsIgnoreCase(sortParam)) {
+			// 좋아요 순, 동률이면 최신순으로
+			sort = Sort.by("likeCount").descending().and(Sort.by("createdAt").descending());
+		} else {
+			// 최신순
+			sort = Sort.by("createdAt").descending();
+		}
+
+		Pageable pageable = PageRequest.of(page, size, sort);
 
 		Page<ReviewEntity> reviewPage =
 			reviewRepository.findAllByProductId(productId, pageable);
@@ -176,19 +189,62 @@ public class ReviewService {
 
 	private ReviewCategory classifyComment(String comment) {
 		try {
-			AiWebClient.AiResponse response = aiWebClient.classifyComment(comment);
+			AiRestClient.AiResponse response = aiRestClient.classifyComment(comment);
 
-			if (response != null && response.getCategory() != null) {
-				return response.getCategory();
+			if (response == null || response.getCategory() == null) {
+				log.warn(
+					"AI 응답이 비어있습니다. 기본 카테고리(ERR)로 설정합니다. comment: {}",
+					comment
+				);
+				return ReviewCategory.ERR;
 			}
 
-			log.warn("AI 응답이 비어있습니다. 기본 카테고리(ERR)로 설정합니다. comment: {}", comment);
-		} catch (Exception e) {
-			// WebClient에서 이미 에러 처리를 하고 있지만, 서비스 단에서도 안전하게 한 번 더 감싸줍니다.
-			log.error("AI 서버 통신 중 예외 발생. 기본 카테고리(ERR)로 설정합니다.", e);
-		}
+			return response.getCategory();
 
-		// AI 서버가 죽었거나 응답이 이상할 경우 가장 안전한 기본값 반환
-		return ReviewCategory.ERR;
+		} catch (Exception e) {
+
+			log.error(
+				"AI 서버 통신 중 예외 발생. 기본 카테고리(ERR)로 설정합니다. comment: {}",
+				comment,
+				e
+			);
+			return ReviewCategory.ERR;
+		}
 	}
+
+
+	@Transactional
+	public int likeReview(UUID reviewId, UUID userId) {
+		ReviewEntity review = reviewRepository.findById(reviewId)
+			.orElseThrow(() -> new IllegalArgumentException("리뷰가 존재하지 않습니다."));
+
+		// 이미 좋아요 했는지 체크
+		reviewLikeRepository.findByReviewIdAndUserId(reviewId, userId)
+			.ifPresent(like -> {
+				throw new IllegalStateException("이미 좋아요를 눌렀습니다.");
+			});
+
+		// 좋아요 저장
+		ReviewLikeEntity like = new ReviewLikeEntity(reviewId, userId);
+		reviewLikeRepository.save(like);
+
+		// 카운트 증가
+		review.incrementLikeCount();
+		return review.getLikeCount();
+	}
+
+	@Transactional
+	public int unlikeReview(UUID reviewId, UUID userId) {
+		ReviewEntity review = reviewRepository.findById(reviewId)
+			.orElseThrow(() -> new IllegalArgumentException("리뷰가 존재하지 않습니다."));
+
+		ReviewLikeEntity like = reviewLikeRepository.findByReviewIdAndUserId(reviewId, userId)
+			.orElseThrow(() -> new IllegalStateException("좋아요를 누르지 않은 리뷰입니다."));
+
+		reviewLikeRepository.delete(like);
+
+		review.decrementLikeCount();
+		return review.getLikeCount();
+	}
+
 }

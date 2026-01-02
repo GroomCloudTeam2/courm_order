@@ -4,6 +4,7 @@ import com.groom.e_commerce.order.domain.entity.Order;
 import com.groom.e_commerce.order.domain.status.OrderStatus;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -12,7 +13,7 @@ public record OrderResponse(
 	UUID orderId,
 	String orderNo,
 	OrderStatus status,
-	BigDecimal totalAmount,
+	BigInteger totalAmount,
 	LocalDateTime orderedAt,
 	List<OrderItemResponse> items // 핵심: 리스트 포함
 ) {
@@ -21,17 +22,18 @@ public record OrderResponse(
 			.map(OrderItemResponse::from)
 			.toList();
 
-		// 총 주문 금액 계산 (도메인 로직에 있다면 그것을 사용, 여기선 단순 합계)
-		BigDecimal total = itemResponses.stream()
-			.map(OrderItemResponse::subtotal)
-			.reduce(BigDecimal.ZERO, BigDecimal::add);
+		// // 총 주문 금액 계산 (도메인 로직에 있다면 그것을 사용, 여기선 단순 합계)
+		// BigDecimal total = itemResponses.stream()
+		// 	.map(OrderItemResponse::subtotal)
+		// 	.reduce(BigDecimal.ZERO, BigDecimal::add);
 
 		return new OrderResponse(
-			order.getId(),
-			order.getOrderNo(),
+			order.getOrderId(),
+			order.getOrderNumber(),
 			order.getStatus(),
-			total,
+			order.getTotalPaymentAmount(),
 			order.getCreatedAt(),
+			// order.getTotalPaymentAmount(),
 			itemResponses
 		);
 	}

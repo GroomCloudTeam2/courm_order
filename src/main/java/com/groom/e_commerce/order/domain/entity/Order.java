@@ -1,5 +1,6 @@
 package com.groom.e_commerce.order.domain.entity;
 
+import java.math.BigInteger;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.UUID;
@@ -40,7 +41,7 @@ public class Order extends BaseEntity { // Audit(생성일시 등) 적용
 	private UUID buyerId;
 
 	@Column(name = "total_payment_amt", nullable = false)
-	private Long totalPaymentAmount;
+	private BigInteger totalPaymentAmount;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false, length = 20)
@@ -68,7 +69,7 @@ public class Order extends BaseEntity { // Audit(생성일시 등) 적용
 
 	/* ================= 생성자 (Builder 패턴 권장) ================= */
 	@Builder
-	public Order(UUID buyerId, String orderNumber, Long totalPaymentAmount,
+	public Order(UUID buyerId, String orderNumber, BigInteger totalPaymentAmount,
 		String recipientName, String recipientPhone, String zipCode,
 		String shippingAddress, String shippingMemo) {
 		this.buyerId = buyerId;

@@ -37,7 +37,7 @@ spring:
 
   datasource:
     # 👇 중요: 아까 도커 설정(POSTGRES_DB)과 이름을 똑같이 맞춰야 연결됩니다!
-    url: jdbc:postgresql://localhost:5432/ecommerce_order
+    url: jdbc:postgresql://localhost:5432/ecommerce
     username: postgres
     password: password
     driver-class-name: org.postgresql.Driver

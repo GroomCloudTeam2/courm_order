@@ -1,5 +1,6 @@
 package com.groom.e_commerce.order.application.service;
 
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import com.groom.e_commerce.order.domain.repository.OrderItemRepository;
 import com.groom.e_commerce.order.domain.repository.OrderRepository;
 import com.groom.e_commerce.order.presentation.dto.request.OrderCreateItemRequest;
 import com.groom.e_commerce.order.presentation.dto.request.OrderCreateRequest;
+import com.groom.e_commerce.order.presentation.dto.response.OrderResponse;
 // import com.groom.e_commerce.product.presentation.dto.response.ProductResponse; // DTO가 없으면 아래 내부 클래스 사용
 
 import lombok.Builder;
@@ -60,7 +62,7 @@ public class OrderService {
 			.zipCode(zipCode)                 // 가짜 데이터 넣음
 			.shippingAddress(shippingAddress) // 가짜 데이터 넣음
 			.shippingMemo("문 앞에 놔주세요")
-			.totalPaymentAmount(0L) // 나중에 계산해서 업데이트
+			.totalPaymentAmount(BigInteger.valueOf(0L)) // 나중에 계산해서 업데이트
 			.build();
 
 		orderRepository.save(order); // 영속화 (ID 생성됨)
@@ -138,5 +140,13 @@ public class OrderService {
 		private String thumbnail;
 		private String optionName;
 		private Long price;
+	}
+
+	@Transactional(readOnly = true) // 중요: 조회 전용 트랜잭션 (성능 최적화)
+	public OrderResponse getOrder(UUID orderId) {
+		Order order = orderRepository.findByIdWithItems(orderId)
+			.orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다. ID: " + orderId));
+
+		return OrderResponse.from(order);
 	}
 }

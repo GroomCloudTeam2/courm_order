@@ -44,25 +44,19 @@ public class OrderService {
 	@Transactional // 쓰기 트랜잭션 시작
 	public UUID createOrder(UUID buyerId, OrderCreateRequest request) {
 
-		// 1. 배송지 정보 조회 (MOCK: 가짜 데이터 하드코딩)
-		// var address = addressService.getAddress(request.getAddressId());
-		// 👇 [임시] 주소 서비스가 없으므로 가짜 객체 생성
-		// String recipientName = "테스트 수령인";
-		// String recipientPhone = "010-1234-5678";
-		// String zipCode = "12345";
-		// String shippingAddress = "서울시 강남구 테헤란로 427";
+
 		ResAddressDtoV1 addressInfo = addressService.getAddress(request.getAddressId(), buyerId);
-		// 2. 주문번호 생성 (예: 20241230-123456)
+		// 2. 주문번호 생성
 		String orderNumber = generateOrderNumber();
 
 		// 3. 주문(Order) 엔티티 생성
 		Order order = Order.builder()
 			.buyerId(buyerId)
 			.orderNumber(orderNumber)
-			.recipientName(addressInfo.getRecipient())      // ✅ DB에서 가져온 수령인 이름
-			.recipientPhone(addressInfo.getRecipientPhone()) // ✅ DB에서 가져온 전화번호
-			.zipCode(addressInfo.getZipCode())              // ✅ DB에서 가져온 우편번호
-			.shippingAddress(addressInfo.getAddress() + " " + addressInfo.getDetailAddress()) // ✅ 주소 + 상세주소 합침
+			.recipientName(addressInfo.getRecipient())
+			.recipientPhone(addressInfo.getRecipientPhone())
+			.zipCode(addressInfo.getZipCode())
+			.shippingAddress(addressInfo.getAddress() + " " + addressInfo.getDetailAddress())
 			.shippingMemo("문 앞에 놔주세요") // (이건 request에 필드가 없어서 일단 고정, 필요하면 request에 추가)
 			.totalPaymentAmount(BigInteger.valueOf(0L))
 			.build();
@@ -75,7 +69,7 @@ public class OrderService {
 
 		for (OrderCreateItemRequest itemReq : request.getItems()) {
 
-			// [MSA Point 1] 상품 서비스에 정보 요청 (MOCK: 가짜 데이터)
+			// 상품 서비스에 정보 요청
 			// ProductResponse productInfo = productService.getProduct(itemReq.getProductId());
 
 			// 👇 [임시] 상품 서비스 대신 가짜 DTO 생성
@@ -114,11 +108,6 @@ public class OrderService {
 
 		// 6. OrderItem 일괄 저장
 		orderItemRepository.saveAll(orderItems);
-
-		// 7. 주문 총액 업데이트
-		// 👇 [중요] Order 엔티티에 이 메서드가 없으면 에러납니다!
-		// Order.java 파일에 updatePaymentAmount 메서드를 추가하거나,
-		// 정 안되면 일단 주석 처리하세요. (DB에는 0원으로 저장됨)
 
 		// order.updatePaymentAmount(totalAmount);
 		System.out.println("최종 결제 금액: " + totalAmount);

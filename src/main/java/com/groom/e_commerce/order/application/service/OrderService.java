@@ -18,7 +18,8 @@ import com.groom.e_commerce.order.domain.repository.OrderRepository;
 import com.groom.e_commerce.order.presentation.dto.request.OrderCreateItemRequest;
 import com.groom.e_commerce.order.presentation.dto.request.OrderCreateRequest;
 import com.groom.e_commerce.order.presentation.dto.response.OrderResponse;
-// import com.groom.e_commerce.product.presentation.dto.response.ProductResponse; // DTO가 없으면 아래 내부 클래스 사용
+import com.groom.e_commerce.user.application.service.AddressServiceV1;
+import com.groom.e_commerce.user.presentation.dto.response.ResAddressDtoV1;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -31,6 +32,7 @@ public class OrderService {
 
 	private final OrderRepository orderRepository;
 	private final OrderItemRepository orderItemRepository;
+	private final AddressServiceV1 addressService;
 
 	// MSA 핵심: Repository가 아니라 Service(또는 Client)를 주입받음
 	// private final ProductService productService;
@@ -45,11 +47,11 @@ public class OrderService {
 		// 1. 배송지 정보 조회 (MOCK: 가짜 데이터 하드코딩)
 		// var address = addressService.getAddress(request.getAddressId());
 		// 👇 [임시] 주소 서비스가 없으므로 가짜 객체 생성
-		String recipientName = "테스트 수령인";
-		String recipientPhone = "010-1234-5678";
-		String zipCode = "12345";
-		String shippingAddress = "서울시 강남구 테헤란로 427";
-
+		// String recipientName = "테스트 수령인";
+		// String recipientPhone = "010-1234-5678";
+		// String zipCode = "12345";
+		// String shippingAddress = "서울시 강남구 테헤란로 427";
+		ResAddressDtoV1 addressInfo = addressService.getAddress(request.getAddressId(), buyerId);
 		// 2. 주문번호 생성 (예: 20241230-123456)
 		String orderNumber = generateOrderNumber();
 
@@ -57,12 +59,12 @@ public class OrderService {
 		Order order = Order.builder()
 			.buyerId(buyerId)
 			.orderNumber(orderNumber)
-			.recipientName(recipientName)     // 가짜 데이터 넣음
-			.recipientPhone(recipientPhone)   // 가짜 데이터 넣음
-			.zipCode(zipCode)                 // 가짜 데이터 넣음
-			.shippingAddress(shippingAddress) // 가짜 데이터 넣음
-			.shippingMemo("문 앞에 놔주세요")
-			.totalPaymentAmount(BigInteger.valueOf(0L)) // 나중에 계산해서 업데이트
+			.recipientName(addressInfo.getRecipient())      // ✅ DB에서 가져온 수령인 이름
+			.recipientPhone(addressInfo.getRecipientPhone()) // ✅ DB에서 가져온 전화번호
+			.zipCode(addressInfo.getZipCode())              // ✅ DB에서 가져온 우편번호
+			.shippingAddress(addressInfo.getAddress() + " " + addressInfo.getDetailAddress()) // ✅ 주소 + 상세주소 합침
+			.shippingMemo("문 앞에 놔주세요") // (이건 request에 필드가 없어서 일단 고정, 필요하면 request에 추가)
+			.totalPaymentAmount(BigInteger.valueOf(0L))
 			.build();
 
 		orderRepository.save(order); // 영속화 (ID 생성됨)
@@ -80,7 +82,7 @@ public class OrderService {
 			MockProductResponse productInfo = MockProductResponse.builder()
 				.productId(itemReq.getProductId())
 				.ownerId(UUID.randomUUID())
-				.name("테스트 상품 (" + itemReq.getProductId().toString().substring(0,5) + ")")
+				.name("테스트 상품 (" + itemReq.getProductId().toString().substring(0, 5) + ")")
 				.thumbnail("http://fake-image.com/img.png")
 				.optionName("기본 옵션")
 				.price(10000L) // 가격 10,000원으로 고정
@@ -149,6 +151,7 @@ public class OrderService {
 
 		return OrderResponse.from(order);
 	}
+
 	/**
 	 * 주문 취소 (핵심 비즈니스 로직)
 	 */

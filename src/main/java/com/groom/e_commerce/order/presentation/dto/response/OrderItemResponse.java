@@ -1,8 +1,9 @@
 package com.groom.e_commerce.order.presentation.dto.response;
 
-import com.groom.e_commerce.order.domain.entity.OrderItem;
 import java.math.BigDecimal;
 import java.util.UUID;
+
+import com.groom.e_commerce.order.domain.entity.OrderItem;
 
 public record OrderItemResponse(
 	UUID productId,

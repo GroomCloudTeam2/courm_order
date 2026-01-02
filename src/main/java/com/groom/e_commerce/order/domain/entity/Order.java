@@ -1,9 +1,8 @@
 package com.groom.e_commerce.order.domain.entity;
 
 import java.math.BigInteger;
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 import com.groom.e_commerce.global.domain.entity.BaseEntity;

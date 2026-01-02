@@ -1,13 +1,12 @@
 package com.groom.e_commerce.order.presentation.dto.response;
 
-import com.groom.e_commerce.order.domain.entity.Order;
-import com.groom.e_commerce.order.domain.status.OrderStatus;
-
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+
+import com.groom.e_commerce.order.domain.entity.Order;
+import com.groom.e_commerce.order.domain.status.OrderStatus;
 
 public record OrderResponse(
 	UUID orderId,

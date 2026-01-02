@@ -10,9 +10,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import org.springframework.stereotype.Repository;
+
 import com.groom.e_commerce.product.domain.entity.Product;
 import com.groom.e_commerce.product.domain.enums.ProductStatus;
 
+@Repository
 public interface ProductRepository extends JpaRepository<Product, UUID> {
 
 	// 상품 목록 조회 (메인 페이지용)

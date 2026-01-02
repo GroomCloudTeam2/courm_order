@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import com.groom.e_commerce.global.common.entity.BaseEntity;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import com.groom.e_commerce.product.domain.enums.ProductStatus;
 
 import jakarta.persistence.CascadeType;
@@ -31,7 +33,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "p_product")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Product extends BaseEntity {
+public class Product {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
@@ -79,6 +81,20 @@ public class Product extends BaseEntity {
 
 	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<ProductVariant> variants = new ArrayList<>();
+
+	@CreationTimestamp
+	@Column(name = "created_at", updatable = false)
+	private LocalDateTime createdAt;
+
+	@UpdateTimestamp
+	@Column(name = "updated_at")
+	private LocalDateTime updatedAt;
+
+	@Column(name = "deleted_at")
+	private LocalDateTime deletedAt;
+
+	@Column(name = "deleted_by")
+	private UUID deletedBy;
 
 	@Builder
 	public Product(UUID ownerId, Category category, String title, String description,
@@ -137,7 +153,8 @@ public class Product extends BaseEntity {
 	// owner에 의한 상품 삭제
 	public void softDelete(UUID deletedBy) {
 		this.status = ProductStatus.DELETED;
-		this.delete(deletedBy);
+		this.deletedAt = LocalDateTime.now();
+		this.deletedBy = deletedBy;
 	}
 
 	public boolean isOwnedBy(UUID ownerId) {
@@ -166,5 +183,9 @@ public class Product extends BaseEntity {
 		if (this.stockQuantity == 0) {
 			this.status = ProductStatus.SOLD_OUT;
 		}
+	}
+
+	public boolean isDeleted() {
+		return this.deletedAt != null;
 	}
 }

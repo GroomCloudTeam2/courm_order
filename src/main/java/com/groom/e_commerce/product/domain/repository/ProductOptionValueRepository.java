@@ -7,8 +7,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import org.springframework.stereotype.Repository;
+
 import com.groom.e_commerce.product.domain.entity.ProductOptionValue;
 
+@Repository
 public interface ProductOptionValueRepository extends JpaRepository<ProductOptionValue, UUID> {
 
 	// 특정 옵션에 속한 값들 조회

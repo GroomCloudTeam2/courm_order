@@ -10,45 +10,41 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.groom.e_commerce.global.common.response.ApiResponse;
-import com.groom.e_commerce.product.application.service.CategoryService;
-import com.groom.e_commerce.product.presentation.dto.response.CategoryResponse;
+import com.groom.e_commerce.product.application.service.CategoryServiceV1;
+import com.groom.e_commerce.product.presentation.dto.response.ResCategoryDtoV1;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "Category", description = "카테고리 API")
 @RestController
 @RequestMapping("/api/v1/categories")
 @RequiredArgsConstructor
-public class CategoryController {
+public class CategoryControllerV1 {
 
-	private final CategoryService categoryService;
+	private final CategoryServiceV1 categoryService;
 
-	/**
-	 * 카테고리 목록 조회
-	 * - parentId가 없으면 전체 계층 구조 반환
-	 * - parentId가 있으면 해당 카테고리의 자식 목록 반환
-	 */
+	@Operation(summary = "카테고리 목록 조회")
 	@GetMapping
-	public ResponseEntity<ApiResponse<List<CategoryResponse>>> getCategories(
+	public ResponseEntity<List<ResCategoryDtoV1>> getCategories(
 		@RequestParam(required = false) UUID parentId
 	) {
-		List<CategoryResponse> categories;
+		List<ResCategoryDtoV1> categories;
 		if (parentId == null) {
 			categories = categoryService.getAllCategories();
 		} else {
 			categories = categoryService.getChildCategories(parentId);
 		}
-		return ResponseEntity.ok(ApiResponse.success(categories));
+		return ResponseEntity.ok(categories);
 	}
 
-	/**
-	 * 카테고리 상세 조회
-	 */
+	@Operation(summary = "카테고리 상세 조회")
 	@GetMapping("/{categoryId}")
-	public ResponseEntity<ApiResponse<CategoryResponse>> getCategory(
+	public ResponseEntity<ResCategoryDtoV1> getCategory(
 		@PathVariable UUID categoryId
 	) {
-		CategoryResponse category = categoryService.getCategory(categoryId);
-		return ResponseEntity.ok(ApiResponse.success(category));
+		ResCategoryDtoV1 category = categoryService.getCategory(categoryId);
+		return ResponseEntity.ok(category);
 	}
 }

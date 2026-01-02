@@ -6,60 +6,60 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.groom.e_commerce.global.common.exception.BusinessException;
-import com.groom.e_commerce.global.common.exception.ErrorCode;
+import com.groom.e_commerce.global.presentation.advice.CustomException;
+import com.groom.e_commerce.global.presentation.advice.ErrorCode;
 import com.groom.e_commerce.product.domain.entity.Category;
 import com.groom.e_commerce.product.domain.repository.CategoryRepository;
-import com.groom.e_commerce.product.presentation.dto.response.CategoryResponse;
+import com.groom.e_commerce.product.presentation.dto.response.ResCategoryDtoV1;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class CategoryService {
+public class CategoryServiceV1 {
 
 	private final CategoryRepository categoryRepository;
 
 	/**
 	 * 전체 카테고리 목록 조회 (계층 구조)
 	 */
-	public List<CategoryResponse> getAllCategories() {
+	public List<ResCategoryDtoV1> getAllCategories() {
 		List<Category> rootCategories = categoryRepository.findRootCategoriesWithChildren();
 		return rootCategories.stream()
-			.map(CategoryResponse::fromWithChildren)
+			.map(ResCategoryDtoV1::fromWithChildren)
 			.toList();
 	}
 
 	/**
 	 * 루트 카테고리 목록 조회
 	 */
-	public List<CategoryResponse> getRootCategories() {
+	public List<ResCategoryDtoV1> getRootCategories() {
 		List<Category> categories = categoryRepository
 			.findByParentIsNullAndIsActiveTrueOrderBySortOrder();
 		return categories.stream()
-			.map(CategoryResponse::from)
+			.map(ResCategoryDtoV1::from)
 			.toList();
 	}
 
 	/**
 	 * 특정 카테고리의 자식 카테고리 목록 조회
 	 */
-	public List<CategoryResponse> getChildCategories(UUID parentId) {
+	public List<ResCategoryDtoV1> getChildCategories(UUID parentId) {
 		validateCategoryExists(parentId);
 		List<Category> categories = categoryRepository
 			.findByParentIdAndIsActiveTrueOrderBySortOrder(parentId);
 		return categories.stream()
-			.map(CategoryResponse::from)
+			.map(ResCategoryDtoV1::from)
 			.toList();
 	}
 
 	/**
 	 * 카테고리 상세 조회
 	 */
-	public CategoryResponse getCategory(UUID categoryId) {
+	public ResCategoryDtoV1 getCategory(UUID categoryId) {
 		Category category = findActiveCategoryById(categoryId);
-		return CategoryResponse.fromWithChildren(category);
+		return ResCategoryDtoV1.fromWithChildren(category);
 	}
 
 	/**
@@ -67,12 +67,12 @@ public class CategoryService {
 	 */
 	public Category findActiveCategoryById(UUID categoryId) {
 		return categoryRepository.findByIdAndIsActiveTrue(categoryId)
-			.orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
+			.orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
 	}
 
 	private void validateCategoryExists(UUID categoryId) {
 		if (!categoryRepository.existsById(categoryId)) {
-			throw new BusinessException(ErrorCode.CATEGORY_NOT_FOUND);
+			throw new CustomException(ErrorCode.CATEGORY_NOT_FOUND);
 		}
 	}
 }

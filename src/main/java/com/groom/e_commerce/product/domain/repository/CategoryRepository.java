@@ -7,8 +7,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import org.springframework.stereotype.Repository;
+
 import com.groom.e_commerce.product.domain.entity.Category;
 
+@Repository
 public interface CategoryRepository extends JpaRepository<Category, UUID> {
 
 	// 최상위 카테고리 조회

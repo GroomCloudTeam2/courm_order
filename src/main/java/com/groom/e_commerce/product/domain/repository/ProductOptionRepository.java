@@ -7,8 +7,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import org.springframework.stereotype.Repository;
+
 import com.groom.e_commerce.product.domain.entity.ProductOption;
 
+@Repository
 public interface ProductOptionRepository extends JpaRepository<ProductOption, UUID> {
 
 	// 특정 상품에 딸린 옵션 목록 조회

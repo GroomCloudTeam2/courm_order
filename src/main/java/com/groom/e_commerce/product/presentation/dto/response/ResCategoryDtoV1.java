@@ -10,7 +10,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class CategoryResponse {
+public class ResCategoryDtoV1 {
 
 	private UUID id;
 	private String name;
@@ -18,10 +18,10 @@ public class CategoryResponse {
 	private Integer sortOrder;
 	private Boolean isActive;
 	private UUID parentId;
-	private List<CategoryResponse> children;
+	private List<ResCategoryDtoV1> children;
 
-	public static CategoryResponse from(Category category) {
-		return CategoryResponse.builder()
+	public static ResCategoryDtoV1 from(Category category) {
+		return ResCategoryDtoV1.builder()
 			.id(category.getId())
 			.name(category.getName())
 			.depth(category.getDepth())
@@ -31,8 +31,8 @@ public class CategoryResponse {
 			.build();
 	}
 
-	public static CategoryResponse fromWithChildren(Category category) {
-		return CategoryResponse.builder()
+	public static ResCategoryDtoV1 fromWithChildren(Category category) {
+		return ResCategoryDtoV1.builder()
 			.id(category.getId())
 			.name(category.getName())
 			.depth(category.getDepth())
@@ -41,7 +41,7 @@ public class CategoryResponse {
 			.parentId(category.getParent() != null ? category.getParent().getId() : null)
 			.children(category.getChildren().stream()
 				.filter(Category::getIsActive)
-				.map(CategoryResponse::fromWithChildren)
+				.map(ResCategoryDtoV1::fromWithChildren)
 				.toList())
 			.build();
 	}

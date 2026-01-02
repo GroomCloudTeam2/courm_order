@@ -1,10 +1,12 @@
 package com.groom.e_commerce.product.domain.entity;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import com.groom.e_commerce.global.common.entity.BaseEntity;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -26,7 +28,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "p_product_option")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ProductOption extends BaseEntity {
+public class ProductOption {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
@@ -46,6 +48,17 @@ public class ProductOption extends BaseEntity {
 	// 해당 옵션이 가질 수 있는 값들의 목록
 	@OneToMany(mappedBy = "option", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<ProductOptionValue> optionValues = new ArrayList<>();
+
+	@CreationTimestamp
+	@Column(name = "created_at", updatable = false)
+	private LocalDateTime createdAt;
+
+	@UpdateTimestamp
+	@Column(name = "updated_at")
+	private LocalDateTime updatedAt;
+
+	@Column(name = "deleted_at")
+	private LocalDateTime deletedAt;
 
 	@Builder
 	public ProductOption(Product product, String name, Integer sortOrder) {

@@ -18,7 +18,7 @@ public record OrderResponse(
 	List<OrderItemResponse> items // 핵심: 리스트 포함
 ) {
 	public static OrderResponse from(Order order) {
-		List<OrderItemResponse> itemResponses = order.getItems().stream()
+		List<OrderItemResponse> itemResponses = order.getItem().stream()
 			.map(OrderItemResponse::from)
 			.toList();
 

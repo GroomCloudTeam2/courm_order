@@ -149,4 +149,39 @@ public class OrderService {
 
 		return OrderResponse.from(order);
 	}
+	/**
+	 * 주문 취소 (핵심 비즈니스 로직)
+	 */
+	@Transactional // ✅ 데이터 변경(상태 변경 + 재고 복구)이므로 필수
+	public void cancelOrder(UUID orderId) {
+
+		// 1. 주문 조회
+		Order order = orderRepository.findById(orderId)
+			.orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다. ID: " + orderId));
+
+		// 2. 주문 취소 처리 (Entity 내부 로직 호출)
+		// -> Order 상태 변경 & OrderItem 상태 변경 수행됨
+		order.cancel();
+
+		// 3. 재고 복구 요청 (Product Service 연동)
+		// OrderItem 리스트를 순회하며 각 상품의 수량만큼 재고를 다시 늘려줍니다.
+		for (OrderItem item : order.getItem()) {
+
+			// 상품 서비스에 재고 증가(복구) 요청
+			// productService.increaseStock(item.getProductId(), item.getQuantity());
+
+			// 👇 [임시] 상품 서비스 대신 로그 출력 (Mocking)(나중에 지우고 위 코드로 대체)
+			System.out.println("=========================================");
+			System.out.println("[재고 복구 요청]");
+			System.out.println("상품 ID: " + item.getProductId());
+			System.out.println("복구 수량: " + item.getQuantity());
+			System.out.println("=========================================");
+		}
+
+		// 4. (선택) 결제 취소 로직
+		// if (order.getStatus() == OrderStatus.PAID) {
+		//     paymentService.cancelPayment(order.getPaymentId());
+		// }
+	}
+
 }

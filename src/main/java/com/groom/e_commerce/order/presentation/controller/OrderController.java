@@ -47,4 +47,9 @@ public class OrderController {
 		OrderResponse response = orderService.getOrder(orderId);
 		return ResponseEntity.ok(response);
 	}
+	@PostMapping("/{orderId}/cancel")
+	public ResponseEntity<String> cancelOrder(@PathVariable UUID orderId) {
+		orderService.cancelOrder(orderId);
+		return ResponseEntity.ok("주문이 성공적으로 취소되었습니다.");
+	}
 }

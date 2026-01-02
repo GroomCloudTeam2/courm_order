@@ -85,4 +85,8 @@ public class OrderItem extends BaseEntity {
 		this.subtotal = unitPrice * quantity;
 		this.itemStatus = OrderStatus.PENDING;
 	}
+
+	public void cancel() {
+		this.itemStatus = OrderStatus.CANCELLED;
+	}
 }

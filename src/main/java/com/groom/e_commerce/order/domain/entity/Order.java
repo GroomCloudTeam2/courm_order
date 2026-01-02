@@ -3,6 +3,7 @@ package com.groom.e_commerce.order.domain.entity;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.UUID;
 
 import com.groom.e_commerce.global.domain.entity.BaseEntity;
@@ -48,7 +49,7 @@ public class Order extends BaseEntity { // Audit(생성일시 등) 적용
 	private OrderStatus status;
 
 	@OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<OrderItem> items = new ArrayList<>();
+	private List<OrderItem> item = new ArrayList<>();
 
 	/* ================= 배송지 스냅샷 (ERD 제약조건 반영) ================= */
 
@@ -108,6 +109,10 @@ public class Order extends BaseEntity { // Audit(생성일시 등) 적용
 			throw new IllegalStateException("현재 주문 상태에서는 취소할 수 없습니다.");
 		}
 		this.status = OrderStatus.CANCELLED;
+
+		for (OrderItem orderItem : this.item) {
+			orderItem.cancel();
+		}
 	}
 
 	// 구매 확정 (DELIVERED → CONFIRMED)

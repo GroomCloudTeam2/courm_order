@@ -10,6 +10,6 @@ import org.springframework.data.repository.query.Param;
 import com.groom.e_commerce.order.domain.entity.Order;
 
 public interface OrderRepository extends JpaRepository<Order, UUID> {
-	@Query("SELECT DISTINCT o FROM Order o JOIN FETCH o.items WHERE o.id = :id")
+	@Query("SELECT DISTINCT o FROM Order o JOIN FETCH o.item WHERE o.orderId = :id")
 	Optional<Order> findByIdWithItems(@Param("id") UUID id);
 }

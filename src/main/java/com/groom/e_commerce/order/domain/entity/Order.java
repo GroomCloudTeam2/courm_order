@@ -22,9 +22,11 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Getter
+@SuperBuilder
 @NoArgsConstructor(access = AccessLevel.PROTECTED) // JPA 필수: 기본 생성자
 @Table(name = "p_order")
 public class Order extends BaseEntity { // Audit(생성일시 등) 적용

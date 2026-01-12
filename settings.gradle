@@ -1,1 +1,6 @@
-rootProject.name = 'e_commerce'
+plugins {
+    // Gradle이 자바를 자동으로 다운로드할 수 있게 도와주는 플러그인
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
+}
+
+rootProject.name = 'courm_order' // 프로젝트 이름 확인
